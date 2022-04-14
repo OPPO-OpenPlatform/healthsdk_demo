@@ -1,0 +1,3 @@
+include ':healthSDK'
+include ':app'
+rootProject.name = "HealthSDKDEMO"

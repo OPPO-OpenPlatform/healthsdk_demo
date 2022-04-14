@@ -1,0 +1,2 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('heytap_health_sdk_vnull-debug.aar'))

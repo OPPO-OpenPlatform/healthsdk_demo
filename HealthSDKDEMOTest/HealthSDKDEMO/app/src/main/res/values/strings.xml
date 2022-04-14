@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">HealthSDKDEMO</string>
+    <string name="read_daily_activity_stat">ReadDailyActivityStat</string>
+    <string name="read_heart_rate_stat">ReadHeartRateStat</string>
+    <string name="get_device_list">GetDeviceList</string>
+    <string name="get_user_info">GetUserInfo</string>
+    <string name="get_authority">getAuthority</string>
+    <string name="read_daily_activity_detail">ReadDailyActivityDetail</string>
+    <string name="read_heart_rate_detail">ReadHeartRateDetail</string>
+    <string name="download_app">DownloadApp</string>
+    <string name="revoke_access">RevokeAccess</string>
+    <string name="check_app_status">checkAPPStatus</string>
+</resources>
