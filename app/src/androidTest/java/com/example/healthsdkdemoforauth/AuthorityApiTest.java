@@ -10,7 +10,6 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.heytap.databaseengine.HeytapHealthApi;
 import com.heytap.databaseengine.apiv2.HResponse;
 import com.heytap.databaseengine.apiv2.auth.IAuthorityApi;
-import com.heytap.databaseengine.constant.ErrorCode;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -22,8 +21,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import junit.framework.AssertionFailedError;
-
 /**
  * Instrumented test, which will execute on an Android device.
  *
@@ -32,7 +29,7 @@ import junit.framework.AssertionFailedError;
 @RunWith(AndroidJUnit4.class)
 public class AuthorityApiTest {
     private static final String TAG = "AuthorityApiTest";
-    private final String[] authList = new String[]{"READ_DAILY_ACTIVITY", "READ_HEART_RATE"};
+    private String[] authList = new String[]{"READ_DAILY_ACTIVITY", "READ_HEART_RATE"};
     private static Context appContext;
     private static IAuthorityApi mApi;
 
@@ -78,29 +75,29 @@ public class AuthorityApiTest {
     * 待授权列表启用后，进行测试
     */
 //    @Test
-    public void authorityApiRevokeTest() {
-        mApi.revoke(new HResponse<List<Object>>() {
-            @Override
-            public void onSuccess(List<Object> objects) {
-                assertNotNull(objects);
-                assertEquals(0, objects.size());
-                mApi.valid(new HResponse<List<String>>() {
-                    @Override
-                    public void onSuccess(List<String> list) {
-                        throw new AssertionFailedError("revoke failed");
-                    }
-
-                    @Override
-                    public void onFailure(int i) {
-                        assertEquals(ErrorCode.ERR_PERMISSION_DENY, i);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(int i) {
-                assertEquals(ErrorCode.ERR_PERMISSION_DENY, i);
-            }
-        });
-    }
+//    public void authorityApiRevokeTest() {
+//        mApi.revoke(new HResponse<List<Object>>() {
+//            @Override
+//            public void onSuccess(List<Object> objects) {
+//                assertNotNull(objects);
+//                assertEquals(0, objects.size());
+//                mApi.valid(new HResponse<List<String>>() {
+//                    @Override
+//                    public void onSuccess(List<String> list) {
+//                        throw new AssertionFailedError("revoke failed");
+//                    }
+//
+//                    @Override
+//                    public void onFailure(int i) {
+//                        assertEquals(ErrorCode.ERR_PERMISSION_DENY, i);
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onFailure(int i) {
+//                assertEquals(ErrorCode.ERR_PERMISSION_DENY, i);
+//            }
+//        });
+//    }
 }

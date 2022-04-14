@@ -1,9 +1,5 @@
 package com.example.healthsdkdemoforauth;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import android.content.Context;
 import android.util.Log;
 
@@ -28,6 +24,9 @@ import org.threeten.bp.ZoneId;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Instrumented test, which will execute on an Android device.
  *
@@ -36,6 +35,7 @@ import java.util.List;
 @RunWith(AndroidJUnit4.class)
 public class SportHealthApiTest {
     private static final String TAG = "SportHealthApiTest";
+    private String[] authList = new String[]{"READ_DAILY_ACTIVITY", "READ_HEART_RATE"};
     private static Context appContext;
     private static ISportHealthApi mApi;
 
@@ -126,21 +126,19 @@ public class SportHealthApiTest {
 
                 @Override
                 public void onFailure(int i) {
-                    Log.e(TAG, "test flag: " + testFlag.getValue());
-                    assertNotNull(testFlag.getValue());
+                    Log.e(TAG, "test flag: " + testFlag.getValue().intValue());
                     testFlag.postValue(testFlag.getValue() + i);
                 }
             });
         }
 
         CommonModule.ServerResponseDelay(5000);
-        Log.d(TAG, "test flag: " + testFlag.getValue());
-        assertNotNull(testFlag.getValue());
-        assertTrue(testFlag.getValue() < 1);
+        Log.d(TAG, "test flag: " + testFlag.getValue().intValue());
+        assertTrue(testFlag.getValue().intValue() < 1);
     }
 
     private static class TestResponse<T> implements HResponse<T> {
-        private final MutableLiveData<Integer> testFlag;
+        private MutableLiveData<Integer> testFlag;
 
         public TestResponse(MutableLiveData<Integer> testFlag) {
             this.testFlag = testFlag;

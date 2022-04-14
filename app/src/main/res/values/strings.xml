@@ -10,6 +10,4 @@
     <string name="download_app">DownloadApp</string>
     <string name="revoke_access">RevokeAccess</string>
     <string name="check_app_status">checkAPPStatus</string>
-    <string name="getdeviceinfo">getDeviceInfo</string>
-    <string name="readdailyactstatnew">ReadDailyActStatNew</string>
 </resources>

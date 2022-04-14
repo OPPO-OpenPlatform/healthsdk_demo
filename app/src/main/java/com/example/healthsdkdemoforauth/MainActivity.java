@@ -12,16 +12,15 @@ import com.heytap.databaseengine.apiv2.HResponse;
 import com.heytap.databaseengine.apiv2.IHeytapHealthApi;
 import com.heytap.databaseengine.apiv2._HeytapHealth;
 import com.heytap.databaseengine.apiv2.common.util.InstallUtils;
-import com.heytap.databaseengine.apiv3.DataReadRequest;
-import com.heytap.databaseengine.apiv3.data.DataPoint;
-import com.heytap.databaseengine.apiv3.data.DataSet;
-import com.heytap.databaseengine.apiv3.data.DataType;
-import com.heytap.databaseengine.apiv3.data.Element;
-import com.heytap.databaseengine.model.proxy.UserDeviceInfoProxy;
-import com.heytap.databaseengine.model.proxy.UserInfoProxy;
+import com.heytap.databaseengine.apiv2.health.HeytapHealthParams;
+import com.heytap.databaseengine.model.UserInfo;
+import com.heytap.databaseengine.model.proxy.HeartRateDataStatProxy;
+import com.heytap.databaseengine.model.proxy.HeartRateProxy;
+import com.heytap.databaseengine.model.proxy.SportDataDetailProxy;
+import com.heytap.databaseengine.model.proxy.SportDataStatProxy;
 import com.heytap.databaseengine.utils.HLog;
+import com.jakewharton.threetenabp.AndroidThreeTen;
 
-import org.threeten.bp.Instant;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.ZoneId;
 
@@ -35,11 +34,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AndroidThreeTen.init(this);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
         long initStart = System.currentTimeMillis();
         HeytapHealthApi.init(this);
-        HeytapHealthApi.setLoggable(true);
         while (true) {
             if (_HeytapHealth.hasInit()) {
                 break;
@@ -54,54 +53,19 @@ public class MainActivity extends AppCompatActivity {
         long endTime = LocalDate.now().plusDays(1).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - 1;
 
         mBinding.buttonDailyActivityStat.setOnClickListener(view -> {
-            DataReadRequest readRequest = new DataReadRequest.Builder()
-                    .read(DataType.TYPE_DAILY_ACTIVITY_COUNT)
-                    .setTimeRange(startTime, endTime)
+            HeytapHealthParams params = new HeytapHealthParams
+                    .Builder(HeytapHealthParams.DAILY_ACTIVITY, HeytapHealthParams.MODE.STAT)
+                    .setTimeScope(startTime, endTime)
                     .build();
+            mBinding.resultScreen.append("Start print data\n");
             long start = System.currentTimeMillis();
-            try {
-                mApi.dataApi().read(readRequest, new HResponse<List<DataSet>>() {
-                    @Override
-                    public void onSuccess(List<DataSet> sportDataStatList) {
-                        runOnUiThread(() -> {
-                            mBinding.resultScreen.append("Start print data\n");
-                            for (DataSet sportDataStat: sportDataStatList) {
-                                showDataSet(sportDataStat);
-                            }
-                            long end = System.currentTimeMillis();
-                            mBinding.resultScreen.append("interface work time: " + (end - start) + " ms\n");
-                            mBinding.resultScreen.append("Print end.\n\n");
-                        });
-                    }
-
-                    @Override
-                    public void onFailure(int i) {
-                        runOnUiThread(() -> {
-                            mBinding.resultScreen.append("read data fail, error code: " + i + "\n");
-                            HLog.e(TAG, "read data fail, error code: " + i + "\n");
-                        });
-                    }
-                });
-            } catch (Exception e) {
-                HLog.e(TAG, e.toString());
-            }
-        });
-
-        mBinding.buttonHeartRateStat.setOnClickListener(view -> {
-            DataReadRequest readRequest = new DataReadRequest.Builder()
-                    .read(DataType.TYPE_HEART_RATE_COUNT)
-                    .setTimeRange(startTime, endTime)
-                    .build();
-            long start = System.currentTimeMillis();
-                try {
-                        mApi.dataApi().read(readRequest, new HResponse<List<DataSet>>() {
+                    try {
+                        mApi.sportHealthApi().query(params, new HResponse<List<SportDataStatProxy>>() {
                             @Override
-                            public void onSuccess(List<DataSet> heartRateDataStatList) {
+                            public void onSuccess(List<SportDataStatProxy> sportDataStatList) {
                                 runOnUiThread(() -> {
                                     mBinding.resultScreen.append("Start print data\n");
-                                    for (DataSet heartRateDataStat : heartRateDataStatList) {
-                                        showDataSet(heartRateDataStat);
-                                    }
+                                    mBinding.resultScreen.append(sportDataStatList + "\n");
                                     long end = System.currentTimeMillis();
                                     mBinding.resultScreen.append("interface work time: " + (end - start) + " ms\n");
                                     mBinding.resultScreen.append("Print end.\n\n");
@@ -110,65 +74,29 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void onFailure(int i) {
+                                HLog.i(TAG,"continuous request data failed");
                                 runOnUiThread(() -> {
                                     mBinding.resultScreen.append("read data fail, error code: " + i + "\n");
-                                    long end = System.currentTimeMillis();
-                                    mBinding.resultScreen.append("interface work time: " + (end - start) + " ms\n\n");
-                                });
-                            }
-                        });
-                } catch (Exception e) {
-                    HLog.e(TAG, e.toString());
-                }
-        });
-        mBinding.buttonDailyActivityDetail.setOnClickListener(view -> {
-            DataReadRequest readRequest = new DataReadRequest.Builder()
-                    .read(DataType.TYPE_DAILY_ACTIVITY)
-                    .setTimeRange(startTime, endTime)
-                    .build();
-            long start = System.currentTimeMillis();
-                try {
-                        mApi.dataApi().read(readRequest, new HResponse<List<DataSet>>() {
-                            @Override
-                            public void onSuccess(List<DataSet> sportDataStatList) {
-                                    runOnUiThread(() -> {
-                                        mBinding.resultScreen.append("Start print data\n");
-                                        for (DataSet sportDataStat : sportDataStatList) {
-                                            showDataSet(sportDataStat);
-                                        }
-                                        long end = System.currentTimeMillis();
-                                        mBinding.resultScreen.append("interface work time: " + (end - start) / 1000 / 60 + " mins\n");
-                                        mBinding.resultScreen.append("Print end.\n\n");
-                                    });
-                            }
-
-                            @Override
-                            public void onFailure(int i) {
-                                runOnUiThread(() -> {
-                                    mBinding.resultScreen.append("read data fail, error code: " + i + "\n");
-                                    HLog.i(TAG,"continuous request data success");
                                     HLog.e(TAG, "read data fail, error code: " + i + "\n");
                                 });
                             }
                         });
-                } catch (Exception e) {
-                    HLog.e(TAG, e.toString());
-                }
-        });
-        mBinding.buttonHeartRateDetail.setOnClickListener(view -> {
-            DataReadRequest readRequest = new DataReadRequest.Builder()
-                    .read(DataType.TYPE_HEART_RATE)
-                    .setTimeRange(startTime, endTime)
+                    } catch (Exception e) {
+                        HLog.e(TAG, e.toString());
+                    }
+            });
+        mBinding.buttonHeartRateStat.setOnClickListener(view -> {
+            HeytapHealthParams params = new HeytapHealthParams
+                    .Builder(HeytapHealthParams.HEART_RATE, HeytapHealthParams.MODE.STAT)
+                    .setTimeScope(startTime, endTime)
                     .build();
             long start = System.currentTimeMillis();
-            mApi.dataApi().read(readRequest, new HResponse<List<DataSet>>() {
+            mApi.sportHealthApi().query(params, new HResponse<List<HeartRateDataStatProxy>>() {
                 @Override
-                public void onSuccess(List<DataSet> heartRateDataStatList) {
+                public void onSuccess(List<HeartRateDataStatProxy> heartRateDataStatList) {
                     runOnUiThread(() -> {
                         mBinding.resultScreen.append("Start print data\n");
-                        for (DataSet heartRateDataStat: heartRateDataStatList) {
-                            showDataSet(heartRateDataStat);
-                        }
+                        mBinding.resultScreen.append(heartRateDataStatList + "\n");
                         long end = System.currentTimeMillis();
                         mBinding.resultScreen.append("interface work time: " + (end - start) +" ms\n");
                         mBinding.resultScreen.append("Print end.\n\n");
@@ -185,14 +113,71 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
-        mBinding.buttonUserInfo.setOnClickListener(view -> {
+        mBinding.buttonDailyActivityDetail.setOnClickListener(view -> {
+            HeytapHealthParams params = new HeytapHealthParams
+                    .Builder(HeytapHealthParams.DAILY_ACTIVITY, HeytapHealthParams.MODE.DETAIL)
+                    .setTimeScope(startTime, endTime)
+                    .build();
+                long start = System.currentTimeMillis();
+                mApi.sportHealthApi().query(params, new HResponse<List<SportDataDetailProxy>>() {
+                    @Override
+                    public void onSuccess(List<SportDataDetailProxy> sportDataDetailList) {
+                        runOnUiThread(() -> {
+                            mBinding.resultScreen.append("Start print data\n");
+                            mBinding.resultScreen.append(sportDataDetailList + "\n");
+                            long end = System.currentTimeMillis();
+                            mBinding.resultScreen.append("interface work time: " + (end - start) + " ms\n");
+                            mBinding.resultScreen.append("Print end.\n\n");
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int i) {
+                        runOnUiThread(() -> {
+                            mBinding.resultScreen.append("read data fail, error code: " + i + "\n");
+                            long end = System.currentTimeMillis();
+                            mBinding.resultScreen.append("interface work time: " + (end - start) + " ms\n\n");
+                        });
+                    }
+                });
+        });
+        mBinding.buttonHeartRateDetail.setOnClickListener(view -> {
+            HeytapHealthParams params = new HeytapHealthParams
+                    .Builder(HeytapHealthParams.HEART_RATE, HeytapHealthParams.MODE.DETAIL)
+                    .setTimeScope(startTime, endTime)
+                    .build();
+
             long start = System.currentTimeMillis();
-            mApi.userInfoApi().query(new HResponse<List<UserInfoProxy>>() {
+            mApi.sportHealthApi().query(params, new HResponse<List<HeartRateProxy>>() {
                 @Override
-                public void onSuccess(List<UserInfoProxy> userInfoList) {
+                public void onSuccess(List<HeartRateProxy> heartRateList) {
                     runOnUiThread(() -> {
                         mBinding.resultScreen.append("Start print data\n");
-                        mBinding.resultScreen.append(userInfoList + "\n");
+                        mBinding.resultScreen.append(heartRateList + "\n");
+                        long end = System.currentTimeMillis();
+                        mBinding.resultScreen.append("interface work time: " + (end - start) + " ms\n");
+                        mBinding.resultScreen.append("Print end.\n\n");
+                    });
+                }
+
+                @Override
+                public void onFailure(int i) {
+                    runOnUiThread(() -> {
+                        mBinding.resultScreen.append("read data fail, error code: " + i + "\n");
+                        long end = System.currentTimeMillis();
+                        mBinding.resultScreen.append("interface work time: " + (end - start) + " ms\n\n");
+                    });
+                }
+            });
+        });
+        mBinding.buttonUserInfo.setOnClickListener(view -> {
+            long start = System.currentTimeMillis();
+            mApi.userInfoApi().query(new HResponse<List<UserInfo>>() {
+                @Override
+                public void onSuccess(List<UserInfo> userInfoList) {
+                    runOnUiThread(() -> {
+                        mBinding.resultScreen.append("Start print data\n");
+                        mBinding.resultScreen.append(userInfoList.toString() + "\n");
                         long end = System.currentTimeMillis();
                         mBinding.resultScreen.append("interface work time: " + (end - start) +" ms\n");
                         mBinding.resultScreen.append("Print end.\n\n");
@@ -211,50 +196,34 @@ public class MainActivity extends AppCompatActivity {
         });
         mBinding.buttonValid.setOnClickListener(view -> {
             long start = System.currentTimeMillis();
-                mApi.authorityApi().valid(new HResponse<List<String>>() {
-                    @Override
-                    public void onSuccess(List<String> strings) {
-                        runOnUiThread(() -> {
-                            mBinding.resultScreen.append("Auth scope is " + strings + "\n");
-                            long end = System.currentTimeMillis();
-                            mBinding.resultScreen.append("interface work time: " + (end - start) +" ms\n\n");
-                        });
-                    }
+            mApi.authorityApi().valid(new HResponse<List<String>>() {
+                @Override
+                public void onSuccess(List<String> strings) {
+                    runOnUiThread(() -> {
+                        mBinding.resultScreen.append("Auth scope is " + strings + "\n");
+                        long end = System.currentTimeMillis();
+                        mBinding.resultScreen.append("interface work time: " + (end - start) +" ms\n\n");
+                    });
+                }
 
-                    @Override
-                    public void onFailure(int i) {
-                        runOnUiThread(() -> {
-                            mBinding.resultScreen.append("Auth valid failed, error code: " + i + "\n");
-                            long end = System.currentTimeMillis();
-                            mBinding.resultScreen.append("interface work time: " + (end - start) +" ms\n\n");
-                        });
-                    }
-                });
+                @Override
+                public void onFailure(int i) {
+                    runOnUiThread(() -> {
+                        mBinding.resultScreen.append("Auth valid failed, error code: " + i + "\n");
+                        long end = System.currentTimeMillis();
+                        mBinding.resultScreen.append("interface work time: " + (end - start) +" ms\n\n");
+                    });
+                }
+            });
         });
         mBinding.buttonAuth.setOnClickListener(view -> {
             long start = System.currentTimeMillis();
             mApi.authorityApi().request(this);
-//            mApi.authorityApi().request(this, "www.baidu.com");
             runOnUiThread(() -> {
                 long end = System.currentTimeMillis();
                 mBinding.resultScreen.append("interface work time: " + (end - start) +" ms\n\n");
             });
         });
-
-        mBinding.buttonGetDeviceInfo.setOnClickListener(v -> mApi.deviceApi().deviceInfoApi()
-                .queryBoundDevice(new HResponse<List<UserDeviceInfoProxy>>() {
-            @Override
-            public void onSuccess(List<UserDeviceInfoProxy> userDeviceInfoProxies) {
-                runOnUiThread(() ->
-                        mBinding.resultScreen.append("Devices are " + userDeviceInfoProxies + "\n"));
-            }
-
-            @Override
-            public void onFailure(int i) {
-                runOnUiThread(() ->
-                        mBinding.resultScreen.append("err " + i + "\n"));
-            }
-        }));
 
         mBinding.downloadApp.setOnClickListener(view -> {
             long start = System.currentTimeMillis();
@@ -286,22 +255,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
-    }
-
-    private void showDataSet(DataSet dataSet) {
-        HLog.i(TAG, "time end: " + System.currentTimeMillis());
-        for (DataPoint dataPoint : dataSet.getDataPoints()) {
-            HLog.i(TAG, "data type name: " + dataPoint.getDataType().getName());
-            mBinding.resultScreen.append("Date:\t" + Instant.ofEpochMilli(dataPoint.getStartTimeStamp())
-                    .atZone(ZoneId.systemDefault()).toLocalDateTime() + "\n");
-            for (Element element : dataPoint.getDataType().getElements()) {
-                HLog.i(TAG, "field name: " + element.getName());
-                HLog.i(TAG, "field format: " + element.getFormat());
-                HLog.i(TAG, "value: " + dataPoint.getValue(element));
-                mBinding.resultScreen.append(element.getName() + ":\t" + dataPoint.getValue(element) + "\n");
-            }
-            mBinding.resultScreen.append("\n");
-        }
     }
 
     @Override

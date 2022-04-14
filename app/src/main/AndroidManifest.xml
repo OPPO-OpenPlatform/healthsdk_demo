@@ -9,7 +9,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -19,7 +20,7 @@
     </application>
     <queries>
         <package android:name= "com.heytap.health"/>
-        <package android:name= "com.heytap.market"/>
-        <package android:name= "com.oppo.market"/>
+        <package android:name="com.oppo.market"/>
+        <package android:name="com.heytap.market"/>
     </queries>
 </manifest>

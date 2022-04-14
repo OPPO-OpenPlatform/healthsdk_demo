@@ -71,6 +71,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/get_authority"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                app:layout_constraintEnd_toStartOf="@+id/button_valid"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/button_user_info" />
 
@@ -92,30 +93,18 @@
                 android:text="@string/get_user_info"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/button_heart_rate_detail"
+                app:layout_constraintTop_toBottomOf="@+id/button_heart_rate_detail"
                 app:layout_constraintVertical_bias="0.033" />
-
-            <Button
-                android:id="@+id/button_get_device_info"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="@string/getdeviceinfo"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/button_valid"
-                app:layout_constraintEnd_toStartOf="@+id/download_app" />
 
             <Button
                 android:id="@+id/download_app"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="76dp"
                 android:text="@string/download_app"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-                app:layout_constraintStart_toStartOf="@+id/button_get_device_info"
-                app:layout_constraintTop_toBottomOf="@+id/button_valid"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/revoke_access" />
 
             <Button
                 android:id="@+id/revoke_access"

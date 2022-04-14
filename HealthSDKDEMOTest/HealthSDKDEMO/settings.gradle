@@ -1,4 +1,0 @@
-include ':heytap_health_sdk_v1.0.0-release'
-include ':healthSDK'
-include ':app'
-rootProject.name = "HealthSDKDEMO"
